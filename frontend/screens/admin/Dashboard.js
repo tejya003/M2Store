@@ -8,7 +8,9 @@ import {
   RefreshControl,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDashboardStats } from '../../api/adminApi';
 import { getAllOrders } from '../../api/orderApi';
 
@@ -52,6 +54,29 @@ const AdminDashboard = ({ navigation }) => {
     setRefreshing(false);
   }, []);
 
+  // 🚪 Logout Handler Function
+  const handleLogout = () => {
+    Alert.alert('Logout', 'तुम्हाला नक्की लॉगआउट करायचे आहे का?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userData');
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          } catch (e) {
+            console.log('Logout error:', e);
+          }
+        },
+      },
+    ]);
+  };
+
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -68,8 +93,18 @@ const AdminDashboard = ({ navigation }) => {
     >
       {/* Purple Header */}
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome back,</Text>
-        <Text style={styles.adminText}>Admin 👋</Text>
+        <View style={styles.headerTopRow}>
+          <View>
+            <Text style={styles.welcomeText}>Welcome back,</Text>
+            <Text style={styles.adminText}>Admin 👋</Text>
+          </View>
+
+          {/* 🔴 Logout Button */}
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutIcon}>🚪</Text>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.storeCard}>
           <Image
@@ -145,7 +180,7 @@ const AdminDashboard = ({ navigation }) => {
           <Text style={styles.emptyText}>No orders yet</Text>
         ) : (
           recentOrders.map((order) => {
-            const colors = STATUS_COLORS[order.orderStatus] || { bg: '#eee', text: '#555' };
+            const colors = STATUS_COLORS[order.orderStatus?.toLowerCase()] || { bg: '#eee', text: '#555' };
             return (
               <View key={order._id} style={styles.orderRow}>
                 <View style={styles.orderIconBox}>
@@ -179,13 +214,18 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: { backgroundColor: '#6C5CE7', paddingTop: 50, paddingHorizontal: 20, paddingBottom: 30, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   welcomeText: { color: '#E0DFFF', fontSize: 14 },
-  adminText: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginTop: 2, marginBottom: 18 },
+  adminText: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginTop: 2 },
+
+  /* Logout Button Styling */
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  logoutIcon: { fontSize: 14, marginRight: 4 },
+  logoutText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
 
   storeCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 12, overflow: 'hidden', position: 'relative' },
   watermarkLogo: { position: 'absolute', right: -10, top: -10, width: 90, height: 90, opacity: 0.15 },
   storeIconImage: { width: 34, height: 34, marginRight: 12 },
-  storeIcon: { fontSize: 22, marginRight: 12 },
   storeName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   storeSub: { color: '#E0DFFF', fontSize: 12 },
 

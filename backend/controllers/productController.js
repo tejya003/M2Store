@@ -26,9 +26,13 @@ const createProduct = async (req, res) => {
   try {
     const productData = { ...req.body };
 
-    if (req.file) {
+    if (req.body.imageUrl && req.body.imageUrl.trim() !== '') {
+      productData.images = [req.body.imageUrl.trim()];
+    } else if (req.file) {
       productData.images = [`/uploads/${req.file.filename}`];
     }
+
+    delete productData.imageUrl;
 
     const product = new Product(productData);
     const savedProduct = await product.save();
@@ -43,9 +47,13 @@ const updateProduct = async (req, res) => {
   try {
     const productData = { ...req.body };
 
-    if (req.file) {
+    if (req.body.imageUrl && req.body.imageUrl.trim() !== '') {
+      productData.images = [req.body.imageUrl.trim()];
+    } else if (req.file) {
       productData.images = [`/uploads/${req.file.filename}`];
     }
+
+    delete productData.imageUrl;
 
     const updated = await Product.findByIdAndUpdate(req.params.id, productData, { new: true });
     if (!updated) return res.status(404).json({ message: 'Product not found' });

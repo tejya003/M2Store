@@ -13,7 +13,15 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { getProducts, deleteProduct } from '../../api/productApi';
 
-const IMAGE_BASE = 'http://192.168.1.2:5000';
+const IMAGE_BASE = 'http://192.168.1.11:5000';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  return `${IMAGE_BASE}${imagePath}`;
+};
 
 const ProductList = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -70,11 +78,12 @@ const ProductList = ({ navigation }) => {
 
   const renderItem = ({ item }) => {
     const isActive = item.stock > 0;
+    const imageUrl = item.images && item.images.length > 0 ? getImageUrl(item.images[0]) : null;
 
     return (
       <View style={styles.card}>
-        {item.images && item.images.length > 0 ? (
-          <Image source={{ uri: `${IMAGE_BASE}${item.images[0]}` }} style={styles.image} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} />
         ) : (
           <View style={[styles.image, styles.noImage]} />
         )}

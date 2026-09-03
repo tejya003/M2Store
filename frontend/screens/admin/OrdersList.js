@@ -15,7 +15,7 @@ import { getAllOrders, updateOrderStatus } from '../../api/orderApi';
 
 const STATUS_TABS = ['All', 'Processing', 'Delivered', 'Cancelled'];
 
-const isProcessing = (status) => ['pending', 'confirmed', 'shipped'].includes(status);
+const isProcessing = (status) => ['pending', 'confirmed', 'shipped'].includes(status?.toLowerCase());
 
 const STATUS_COLORS = {
   pending: { bg: '#FFF3E0', text: '#F57C00' },
@@ -37,7 +37,7 @@ const OrdersList = () => {
       const data = await getAllOrders();
       setOrders(data);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error.message || 'ऑर्डर्स लोड करताना अडचण आली.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const OrdersList = () => {
   );
 
   const handleStatusChange = (id, newStatus) => {
-    Alert.alert('Update Status', `Mark this order as ${newStatus}?`, [
+    Alert.alert('Update Status', `ही ऑर्डर '${newStatus}' म्हणून मार्क करायची का?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Confirm',
@@ -61,8 +61,9 @@ const OrdersList = () => {
             setOrders((prev) =>
               prev.map((o) => (o._id === id ? { ...o, orderStatus: newStatus } : o))
             );
+            Alert.alert('Success', `ऑर्डर स्टेटस '${newStatus}' वर अपडेट झाला.`);
           } catch (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', error.message || 'स्टेटस अपडेट झाला नाही.');
           }
         },
       },
@@ -81,9 +82,11 @@ const OrdersList = () => {
 
   const filteredOrders = orders.filter((o) => {
     let matchesTab = true;
-    if (activeTab === 'Processing') matchesTab = isProcessing(o.orderStatus);
-    else if (activeTab === 'Delivered') matchesTab = o.orderStatus === 'delivered';
-    else if (activeTab === 'Cancelled') matchesTab = o.orderStatus === 'cancelled';
+    const currentStatus = o.orderStatus?.toLowerCase();
+
+    if (activeTab === 'Processing') matchesTab = isProcessing(currentStatus);
+    else if (activeTab === 'Delivered') matchesTab = currentStatus === 'delivered';
+    else if (activeTab === 'Cancelled') matchesTab = currentStatus === 'cancelled';
 
     const query = searchQuery.trim().toLowerCase();
     const matchesSearch =
@@ -95,24 +98,29 @@ const OrdersList = () => {
   });
 
   const formatDate = (dateStr) => {
+    if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
-      ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    return (
+      d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ', ' +
+      d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    );
   };
 
   const renderItem = ({ item }) => {
-    const colors = STATUS_COLORS[item.orderStatus] || { bg: '#eee', text: '#555' };
+    const statusKey = item.orderStatus?.toLowerCase() || 'pending';
+    const colors = STATUS_COLORS[statusKey] || { bg: '#eee', text: '#555' };
 
     return (
       <TouchableOpacity style={styles.card} onPress={() => openStatusMenu(item)}>
         <View style={styles.iconBox}>
-          <Text>🛍️</Text>
+          <Text style={{ fontSize: 18 }}>🛍️</Text>
         </View>
 
         <View style={{ flex: 1 }}>
           <Text style={styles.orderId}>#{item._id.slice(-6).toUpperCase()}</Text>
           <Text style={styles.date}>{formatDate(item.createdAt)}</Text>
-          <Text style={styles.customer}>{item.user?.name || 'Unknown'}</Text>
+          <Text style={styles.customer}>{item.user?.name || 'Unknown User'}</Text>
         </View>
 
         <View style={{ alignItems: 'flex-end' }}>
@@ -128,7 +136,7 @@ const OrdersList = () => {
   return (
     <View style={styles.screen}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Orders</Text>
+        <Text style={styles.title}>Orders List</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => setShowSearch((prev) => !prev)}>
             <Text style={styles.headerIcon}>🔍</Text>
@@ -137,7 +145,7 @@ const OrdersList = () => {
             onPress={() =>
               Alert.alert(
                 'Help',
-                'Tap an order to update its status. Use the tabs to filter by Processing, Delivered or Cancelled.'
+                'ऑर्डरचा स्टेटस बदलण्यासाठी ऑर्डर कार्डवर क्लिक करा. फिल्टर करण्यासाठी टॅब्स वापरा.'
               )
             }
           >
@@ -177,7 +185,7 @@ const OrdersList = () => {
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 40 }}
-          ListEmptyComponent={<Text style={styles.emptyText}>No orders found</Text>}
+          ListEmptyComponent={<Text style={styles.emptyText}>कोणतीही ऑर्डर सापडली नाही 📦</Text>}
         />
       )}
     </View>
@@ -198,7 +206,7 @@ const styles = StyleSheet.create({
   tabText: { color: '#555', fontSize: 13, textTransform: 'capitalize' },
   activeTabText: { color: '#fff', fontWeight: '600' },
 
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10 },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
   iconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F0EEFF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   orderId: { fontWeight: 'bold', fontSize: 14, color: '#222' },
   date: { fontSize: 11, color: '#999', marginTop: 2 },

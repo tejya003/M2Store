@@ -8,14 +8,17 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userManagementRoutes = require('./routes/userManagementRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
 app.use((req, res, next) => {
-  console.log(req.method, req.url);
+  console.log(`[${req.method}] ${req.url}`);
   next();
 });
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.log('MongoDB error:', err));
@@ -30,5 +33,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin/customers', userManagementRoutes);
+app.use('/api/payment', paymentRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

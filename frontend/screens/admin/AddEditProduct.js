@@ -13,7 +13,15 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useTheme } from '../../context/ThemeContext';
 import { createProduct, updateProduct } from '../../api/productApi';
 
-const IMAGE_BASE = 'http://192.168.1.2:5000';
+const IMAGE_BASE = 'http://192.168.1.11:5000';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  return `${IMAGE_BASE}${imagePath}`;
+};
 
 const AddEditProduct = ({ navigation, route }) => {
   const { theme } = useTheme();
@@ -27,11 +35,12 @@ const AddEditProduct = ({ navigation, route }) => {
   const [stock, setStock] = useState(existingProduct ? String(existingProduct.stock) : '');
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const existingImageUrl =
     existingProduct?.images && existingProduct.images.length > 0
-      ? `${IMAGE_BASE}${existingProduct.images[0]}`
+      ? getImageUrl(existingProduct.images[0])
       : null;
 
   const pickImage = () => {
@@ -43,6 +52,7 @@ const AddEditProduct = ({ navigation, route }) => {
       }
       if (response.assets && response.assets.length > 0) {
         setSelectedImage(response.assets[0]);
+        setImageUrl('');
       }
     });
   };
@@ -63,7 +73,9 @@ const AddEditProduct = ({ navigation, route }) => {
       formData.append('category', category.trim());
       formData.append('stock', stock.trim());
 
-      if (selectedImage) {
+      if (imageUrl.trim() !== '') {
+        formData.append('imageUrl', imageUrl.trim());
+      } else if (selectedImage) {
         formData.append('image', {
           uri: selectedImage.uri,
           type: selectedImage.type || 'image/jpeg',
@@ -87,6 +99,8 @@ const AddEditProduct = ({ navigation, route }) => {
     }
   };
 
+  const previewImage = imageUrl.trim() !== '' ? imageUrl.trim() : (selectedImage ? selectedImage.uri : existingImageUrl);
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.text }]}>
@@ -94,16 +108,28 @@ const AddEditProduct = ({ navigation, route }) => {
       </Text>
 
       <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-        {selectedImage ? (
-          <Image source={{ uri: selectedImage.uri }} style={styles.previewImage} />
-        ) : existingImageUrl ? (
-          <Image source={{ uri: existingImageUrl }} style={styles.previewImage} />
+        {previewImage ? (
+          <Image source={{ uri: previewImage }} style={styles.previewImage} />
         ) : (
           <View style={[styles.previewImage, styles.noImage, { borderColor: theme.border }]}>
             <Text style={{ color: theme.placeholder }}>Tap to select image</Text>
           </View>
         )}
       </TouchableOpacity>
+
+      <Text style={[styles.orText, { color: theme.placeholder }]}>— OR —</Text>
+
+      <TextInput
+        placeholder="Paste image URL here"
+        value={imageUrl}
+        onChangeText={(text) => {
+          setImageUrl(text);
+          if (text.trim() !== '') setSelectedImage(null);
+        }}
+        autoCapitalize="none"
+        style={[styles.input, { backgroundColor: theme.inputBackground, color: theme.inputText, borderColor: theme.border }]}
+        placeholderTextColor={theme.placeholder}
+      />
 
       <TextInput
         placeholder="Product name"
@@ -164,9 +190,10 @@ const AddEditProduct = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 60 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  imagePicker: { alignItems: 'center', marginBottom: 20 },
+  imagePicker: { alignItems: 'center', marginBottom: 10 },
   previewImage: { width: 140, height: 140, borderRadius: 10 },
   noImage: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderStyle: 'dashed' },
+  orText: { textAlign: 'center', marginBottom: 10, fontSize: 12 },
   input: { height: 50, borderWidth: 1, borderRadius: 8, paddingHorizontal: 15, marginBottom: 15, fontSize: 15 },
   textArea: { height: 90, paddingTop: 12 },
   saveButton: { backgroundColor: '#1E88E5', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
