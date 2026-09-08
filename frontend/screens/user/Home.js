@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { getProducts } from '../../api/productApi';
+import { getWishlist, addToWishlist, removeFromWishlist } from '../../utils/wishlistStorage';
 
 // Unsplash Direct Images for Categories (Zero IP reliance)
 const CATEGORIES = [
@@ -32,6 +34,7 @@ const Home = ({ navigation }) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [wishlistIds, setWishlistIds] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -52,6 +55,39 @@ const Home = ({ navigation }) => {
       }
     })();
   }, []);
+
+  // Screen वर परत आल्यावर wishlist status refresh कर (Wishlist screen वरून remove केलं तरी sync राहील)
+  const loadWishlistIds = async () => {
+    try {
+      const list = await getWishlist();
+      setWishlistIds((list || []).map((item) => item._id || item.productId));
+    } catch (error) {
+      console.log('Wishlist ids load error:', error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadWishlistIds();
+    }, [])
+  );
+
+  const isProductInWishlist = (productId) => wishlistIds.includes(productId);
+
+  const handleToggleWishlist = async (product) => {
+    const productId = product._id || product.productId;
+    try {
+      if (isProductInWishlist(productId)) {
+        const updated = await removeFromWishlist(productId);
+        setWishlistIds((updated || []).map((item) => item._id || item.productId));
+      } else {
+        const updated = await addToWishlist(product);
+        setWishlistIds((updated || []).map((item) => item._id || item.productId));
+      }
+    } catch (error) {
+      console.log('Toggle wishlist error:', error);
+    }
+  };
 
   // Search Logic for Live Filtering
   const handleSearch = (text) => {
@@ -158,33 +194,47 @@ const Home = ({ navigation }) => {
         ) : (
           <ScrollView horizontal={search.trim() === ''} showsHorizontalScrollIndicator={false}>
             <View style={search.trim() !== '' ? styles.gridContainer : styles.rowContainer}>
-              {displayProducts.map((product) => (
-                <TouchableOpacity
-                  key={product._id}
-                  style={search.trim() !== '' ? styles.productCardGrid : styles.productCard}
-                  onPress={() => navigation.navigate('ProductDetails', { product })}
-                >
-                  <View style={styles.productImageBox}>
-                    {product.images && product.images.length > 0 ? (
-                      <Image
-                        source={{ uri: getImageUrl(product.images[0]) }}
-                        style={styles.productImage}
-                      />
-                    ) : (
-                      <View style={[styles.productImage, styles.noImage]} />
-                    )}
-                    <Text style={styles.heartIcon}>♡</Text>
-                  </View>
+              {displayProducts.map((product) => {
+                const productId = product._id || product.productId;
+                const inWishlist = isProductInWishlist(productId);
 
-                  <Text style={styles.productName} numberOfLines={1}>
-                    {product.name}
-                  </Text>
-                  <View style={styles.productMeta}>
-                    <Text style={styles.productPrice}>₹{product.price}</Text>
-                    <Text style={styles.productRating}>★ {product.ratingsAverage || 0}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                return (
+                  <TouchableOpacity
+                    key={productId}
+                    style={search.trim() !== '' ? styles.productCardGrid : styles.productCard}
+                    onPress={() => navigation.navigate('ProductDetails', { product })}
+                  >
+                    <View style={styles.productImageBox}>
+                      {product.images && product.images.length > 0 ? (
+                        <Image
+                          source={{ uri: getImageUrl(product.images[0]) }}
+                          style={styles.productImage}
+                        />
+                      ) : (
+                        <View style={[styles.productImage, styles.noImage]} />
+                      )}
+
+                      <TouchableOpacity
+                        style={styles.heartBtn}
+                        onPress={() => handleToggleWishlist(product)}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text style={[styles.heartIcon, inWishlist && styles.heartIconActive]}>
+                          {inWishlist ? '❤️' : '♡'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.productName} numberOfLines={1}>
+                      {product.name}
+                    </Text>
+                    <View style={styles.productMeta}>
+                      <Text style={styles.productPrice}>₹{product.price}</Text>
+                      <Text style={styles.productRating}>★ {product.ratingsAverage || 0}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </ScrollView>
         )}
@@ -239,7 +289,9 @@ const styles = StyleSheet.create({
   productImageBox: { position: 'relative' },
   productImage: { width: '100%', height: 140, borderRadius: 12, backgroundColor: '#eee' },
   noImage: { backgroundColor: '#eee' },
-  heartIcon: { position: 'absolute', top: 8, right: 8, fontSize: 18, color: '#fff' },
+  heartBtn: { position: 'absolute', top: 6, right: 6, padding: 4 },
+  heartIcon: { fontSize: 18, color: '#fff' },
+  heartIconActive: { fontSize: 16 },
   productName: { fontSize: 13, fontWeight: '600', color: '#222', marginTop: 8 },
   productMeta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
   productPrice: { fontSize: 13, fontWeight: 'bold', color: '#222' },

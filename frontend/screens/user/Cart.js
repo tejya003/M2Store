@@ -22,7 +22,7 @@ const Cart = ({ navigation }) => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return `http://192.168.1.11:5000${imagePath}`;
+    return `http://192.168.1.2:5000${imagePath}`;
   };
 
   const loadCartAndAddress = async () => {

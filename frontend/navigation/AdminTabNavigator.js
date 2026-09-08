@@ -9,11 +9,13 @@ import AddEditProduct from '../screens/admin/AddEditProduct';
 import CustomersList from '../screens/admin/CustomersList';
 import CustomerOrders from '../screens/admin/CustomerOrders';
 import OrdersList from '../screens/admin/OrdersList';
+import Invoice from '../screens/admin/Invoice';
 import More from '../screens/admin/More';
 
 const Tab = createBottomTabNavigator();
 const ProductsStack = createNativeStackNavigator();
 const UsersStack = createNativeStackNavigator();
+const OrdersStack = createNativeStackNavigator();
 
 const ProductsStackScreen = () => (
   <ProductsStack.Navigator screenOptions={{ headerShown: false }}>
@@ -27,6 +29,13 @@ const UsersStackScreen = () => (
     <UsersStack.Screen name="CustomersList" component={CustomersList} />
     <UsersStack.Screen name="CustomerOrders" component={CustomerOrders} />
   </UsersStack.Navigator>
+);
+
+const OrdersStackScreen = () => (
+  <OrdersStack.Navigator screenOptions={{ headerShown: false }}>
+    <OrdersStack.Screen name="OrdersList" component={OrdersList} />
+    <OrdersStack.Screen name="Invoice" component={Invoice} />
+  </OrdersStack.Navigator>
 );
 
 const ICONS = {
@@ -49,7 +58,7 @@ const AdminTabNavigator = () => {
       <Tab.Screen name="Dashboard" component={Dashboard} />
       <Tab.Screen name="Products" component={ProductsStackScreen} />
       <Tab.Screen name="Users" component={UsersStackScreen} />
-      <Tab.Screen name="Orders" component={OrdersList} />
+      <Tab.Screen name="Orders" component={OrdersStackScreen} />
       <Tab.Screen name="More" component={More} />
     </Tab.Navigator>
   );

@@ -1,7 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Temporary store for otp before user registers (email -> otp)
 const tempOtpStore = {};
@@ -42,6 +45,7 @@ const verifyOtp = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 // REGISTER
 const registerUser = async (req, res) => {
   try {
@@ -87,6 +91,7 @@ const registerUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 // LOGIN (username + password)
 const loginUser = async (req, res) => {
   try {
@@ -116,16 +121,12 @@ const loginUser = async (req, res) => {
       }
     });
   } catch (err) {
-  console.error('REGISTER ERROR:', err);
-  res.status(500).json({ message: err.message });
-}
+    console.error('LOGIN ERROR:', err);
+    res.status(500).json({ message: err.message });
+  }
 };
 
-module.exports = { sendOtp, verifyOtp, registerUser, loginUser };
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// Google Sign-In Function
+// GOOGLE LOGIN
 const googleLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -138,13 +139,11 @@ const googleLogin = async (req, res) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const { email, name, picture } = ticket.getPayload();
+    const { email, name } = ticket.getPayload();
 
-    // Check if user already exists
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create new user if not exists
       const randomUsername = email.split('@')[0] + Math.floor(1000 + Math.random() * 9000);
       user = new User({
         name,
@@ -156,10 +155,11 @@ const googleLogin = async (req, res) => {
       await user.save();
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'secretKey', {
-      expiresIn: '7d',
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.json({
       message: 'Google Login successful',
@@ -178,11 +178,4 @@ const googleLogin = async (req, res) => {
   }
 };
 
-// module.exports मध्ये googleLogin add करा:
-module.exports = {
-  sendOtp,
-  verifyOtp,
-  registerUser,
-  loginUser,
-  googleLogin, // <-- हे नवीन जोडले
-};
+module.exports = { sendOtp, verifyOtp, registerUser, loginUser, googleLogin };

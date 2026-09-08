@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://192.168.1.11:5000/api/orders';
+const BASE_URL = 'http://192.168.1.2:5000/api/orders';
 
 const getToken = async () => {
-  const token = await AsyncStorage.getItem('userToken');
-  return token || (await AsyncStorage.getItem('token'));
+  return await AsyncStorage.getItem('token');
 };
 
 export const createOrder = async (orderData) => {
@@ -43,8 +42,13 @@ export const getAllOrders = async () => {
   return data;
 };
 
-export const updateOrderStatus = async (id, orderStatus) => {
+export const updateOrderStatus = async (id, orderStatus, expectedDeliveryDays) => {
   const token = await getToken();
+
+  const body = { orderStatus };
+  if (expectedDeliveryDays) {
+    body.expectedDeliveryDays = expectedDeliveryDays;
+  }
 
   const response = await fetch(`${BASE_URL}/${id}/status`, {
     method: 'PUT',
@@ -52,13 +56,14 @@ export const updateOrderStatus = async (id, orderStatus) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ orderStatus }),
+    body: JSON.stringify(body),
   });
 
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to update status');
   return data;
 };
+
 export const getMyOrders = async () => {
   const token = await getToken();
 

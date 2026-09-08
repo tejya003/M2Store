@@ -78,7 +78,11 @@ const Profile = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('Wishlist')}
+          onPress={() =>
+            navigation.navigate('Home', {
+              screen: 'Wishlist',
+            })
+          }
         >
           <Text style={styles.menuIcon}>❤️</Text>
           <Text style={styles.menuText}>Wishlist</Text>

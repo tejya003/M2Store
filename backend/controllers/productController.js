@@ -35,8 +35,13 @@ const createProduct = async (req, res) => {
     delete productData.imageUrl;
 
     const product = new Product(productData);
-    const savedProduct = await product.save();
-    res.status(201).json(savedProduct);
+    await product.save();
+
+    // Product _id वापरून unique barcode तयार कर
+    product.barcode = product._id.toString().toUpperCase();
+    await product.save();
+
+    res.status(201).json(product);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

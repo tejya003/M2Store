@@ -19,12 +19,14 @@ const orderSchema = new mongoose.Schema({
     mobile: { type: String },
     addressLine: { type: String },
     city: { type: String },
-    pincode: { type: String }
+    pincode: { type: String },
+    latitude: { type: Number },
+    longitude: { type: Number }
   },
 
   orderStatus: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'confirmed', 'shipped', 'out for delivery', 'delivered', 'cancelled'],
     default: 'pending'
   },
 
@@ -32,7 +34,11 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'paid', 'failed'],
     default: 'pending'
-  }
+  },
+
+  expectedDeliveryDays: { type: Number },
+  confirmedAt: { type: Date }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

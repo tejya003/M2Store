@@ -23,7 +23,7 @@ const Wishlist = ({ navigation }) => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return `http://192.168.1.11:5000${imagePath}`;
+    return `http://192.168.1.2:5000${imagePath}`;
   };
 
   const loadWishlist = async () => {
@@ -99,7 +99,9 @@ const Wishlist = ({ navigation }) => {
       ) : (
         <FlatList
           data={wishlist}
-          keyExtractor={(item) => item._id || item.productId}
+          keyExtractor={(item, index) =>
+            item._id ? String(item._id) : item.productId ? String(item.productId) : `wishlist-${index}`
+          }
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 20 }}
         />

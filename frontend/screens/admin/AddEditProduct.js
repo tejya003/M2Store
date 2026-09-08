@@ -10,10 +10,11 @@ import {
   Alert,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import BarcodeSvg from 'react-native-barcode-svg';
 import { useTheme } from '../../context/ThemeContext';
 import { createProduct, updateProduct } from '../../api/productApi';
 
-const IMAGE_BASE = 'http://192.168.1.11:5000';
+const IMAGE_BASE = 'http://192.168.1.2:5000';
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
@@ -174,6 +175,24 @@ const AddEditProduct = ({ navigation, route }) => {
         placeholderTextColor={theme.placeholder}
       />
 
+      {/* Barcode Section */}
+      <Text style={[styles.sectionLabel, { color: theme.text }]}>Barcode</Text>
+      {isEditMode && existingProduct?.barcode ? (
+        <View style={[styles.barcodeBox, { backgroundColor: '#fff', borderColor: theme.border }]}>
+          <BarcodeSvg
+            value={existingProduct.barcode}
+            format="CODE128"
+            height={70}
+            width={2}
+          />
+          <Text style={styles.barcodeText}>{existingProduct.barcode}</Text>
+        </View>
+      ) : (
+        <Text style={[styles.barcodeNote, { color: theme.placeholder }]}>
+          Product save झाल्यावर barcode automatically तयार होईल
+        </Text>
+      )}
+
       <TouchableOpacity
         style={[styles.saveButton, isSaving && styles.disabledButton]}
         disabled={isSaving}
@@ -196,6 +215,10 @@ const styles = StyleSheet.create({
   orText: { textAlign: 'center', marginBottom: 10, fontSize: 12 },
   input: { height: 50, borderWidth: 1, borderRadius: 8, paddingHorizontal: 15, marginBottom: 15, fontSize: 15 },
   textArea: { height: 90, paddingTop: 12 },
+  sectionLabel: { fontSize: 14, fontWeight: 'bold', marginBottom: 8 },
+  barcodeBox: { alignItems: 'center', borderWidth: 1, borderRadius: 8, paddingVertical: 15, marginBottom: 15 },
+  barcodeText: { marginTop: 6, fontSize: 12, fontWeight: '600', color: '#333' },
+  barcodeNote: { fontSize: 12, fontStyle: 'italic', marginBottom: 15 },
   saveButton: { backgroundColor: '#1E88E5', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
   disabledButton: { opacity: 0.6 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },

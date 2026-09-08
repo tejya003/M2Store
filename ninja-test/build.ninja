@@ -1,0 +1,3 @@
+rule cc 
+  command = "C:\Users\tejas\AppData\Local\Android\Sdk\ndk\27.1.12297006\toolchains\llvm\prebuilt\windows-x86_64\bin\clang++.exe" -c $in -o $out 
+build test.o: cc test.cpp 

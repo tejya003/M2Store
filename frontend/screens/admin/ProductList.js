@@ -13,7 +13,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { getProducts, deleteProduct } from '../../api/productApi';
 
-const IMAGE_BASE = 'http://192.168.1.11:5000';
+const IMAGE_BASE = 'http://192.168.1.2:5000';
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;

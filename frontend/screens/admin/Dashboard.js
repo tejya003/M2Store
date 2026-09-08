@@ -63,8 +63,8 @@ const AdminDashboard = ({ navigation }) => {
         style: 'destructive',
         onPress: async () => {
           try {
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('userData');
+            await AsyncStorage.removeItem('token');
+            await AsyncStorage.removeItem('user');
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }],

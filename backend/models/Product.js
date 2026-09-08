@@ -8,7 +8,8 @@ const productSchema = new mongoose.Schema({
   category: { type: String },
   stock: { type: Number, default: 0 },
   ratingsAverage: { type: Number, default: 0 },
-  ratingsCount: { type: Number, default: 0 }
+  ratingsCount: { type: Number, default: 0 },
+  barcode: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);
