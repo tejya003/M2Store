@@ -29,7 +29,7 @@ const createProduct = async (req, res) => {
     if (req.body.imageUrl && req.body.imageUrl.trim() !== '') {
       productData.images = [req.body.imageUrl.trim()];
     } else if (req.file) {
-      productData.images = [`/uploads/${req.file.filename}`];
+      productData.images = [req.file.path];
     }
 
     delete productData.imageUrl;
@@ -55,7 +55,7 @@ const updateProduct = async (req, res) => {
     if (req.body.imageUrl && req.body.imageUrl.trim() !== '') {
       productData.images = [req.body.imageUrl.trim()];
     } else if (req.file) {
-      productData.images = [`/uploads/${req.file.filename}`];
+      productData.images = [req.file.path];
     }
 
     delete productData.imageUrl;
