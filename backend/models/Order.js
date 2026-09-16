@@ -37,7 +37,18 @@ const orderSchema = new mongoose.Schema({
   },
 
   expectedDeliveryDays: { type: Number },
-  confirmedAt: { type: Date }
+  confirmedAt: { type: Date },
+
+  // 👇 नवीन: कोणत्या hubs मधून जाणार आहे (उदा. ['Kolhapur', 'Satara', 'Pune'])
+  route: [{ type: String }],
+
+  // 👇 नवीन: प्रत्येक hub वर scan झाल्याची नोंद
+  scanHistory: [
+    {
+      office: { type: String },
+      scannedAt: { type: Date, default: Date.now }
+    }
+  ]
 
 }, { timestamps: true });
 

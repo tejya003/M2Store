@@ -35,6 +35,17 @@ const LoginScreen = ({ navigation }) => {
     });
   }, []);
 
+  // 👇 नवीन: role वरून योग्य screen ठरवणारं helper
+  const goToRoleScreen = (role) => {
+    if (role === 'admin') {
+      navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
+    } else if (role === 'office') {
+      navigation.reset({ index: 0, routes: [{ name: 'OfficeScan' }] });
+    } else {
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    }
+  };
+
   // Standard Username / Password Login
   const handleLogin = async () => {
     Keyboard.dismiss();
@@ -57,11 +68,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
 
-      if (data.user.role === 'admin') {
-        navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
-      } else {
-        navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
-      }
+      goToRoleScreen(data.user.role); // 👈 बदललं
     } catch (error) {
       Alert.alert('Error', error.message || 'Login failed');
     } finally {
@@ -84,11 +91,7 @@ const LoginScreen = ({ navigation }) => {
           await AsyncStorage.setItem('token', res.token);
           await AsyncStorage.setItem('user', JSON.stringify(res.user));
 
-          if (res.user.role === 'admin') {
-            navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
-          } else {
-            navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
-          }
+          goToRoleScreen(res.user.role); // 👈 बदललं (office Google ने login करणार नाहीत, पण consistent ठेवलं)
         } else {
           Alert.alert('Error', res.message || 'Google Login failed');
         }

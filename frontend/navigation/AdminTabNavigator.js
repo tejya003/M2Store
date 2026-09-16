@@ -11,11 +11,13 @@ import CustomerOrders from '../screens/admin/CustomerOrders';
 import OrdersList from '../screens/admin/OrdersList';
 import Invoice from '../screens/admin/Invoice';
 import More from '../screens/admin/More';
+import ManageOffices from '../screens/admin/ManageOffices'; // 👈 नवीन
 
 const Tab = createBottomTabNavigator();
 const ProductsStack = createNativeStackNavigator();
 const UsersStack = createNativeStackNavigator();
 const OrdersStack = createNativeStackNavigator();
+const MoreStack = createNativeStackNavigator(); // 👈 नवीन
 
 const ProductsStackScreen = () => (
   <ProductsStack.Navigator screenOptions={{ headerShown: false }}>
@@ -36,6 +38,13 @@ const OrdersStackScreen = () => (
     <OrdersStack.Screen name="OrdersList" component={OrdersList} />
     <OrdersStack.Screen name="Invoice" component={Invoice} />
   </OrdersStack.Navigator>
+);
+
+const MoreStackScreen = () => (
+  <MoreStack.Navigator screenOptions={{ headerShown: false }}>
+    <MoreStack.Screen name="MoreHome" component={More} />
+    <MoreStack.Screen name="ManageOffices" component={ManageOffices} />
+  </MoreStack.Navigator>
 );
 
 const ICONS = {
@@ -59,7 +68,7 @@ const AdminTabNavigator = () => {
       <Tab.Screen name="Products" component={ProductsStackScreen} />
       <Tab.Screen name="Users" component={UsersStackScreen} />
       <Tab.Screen name="Orders" component={OrdersStackScreen} />
-      <Tab.Screen name="More" component={More} />
+      <Tab.Screen name="More" component={MoreStackScreen} />
     </Tab.Navigator>
   );
 };

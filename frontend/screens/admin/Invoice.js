@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
+  Dimensions,
   Alert,
   Linking,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+import Barcode from 'react-native-barcode-svg';
 
 const SHOP_NAME = 'M2 Store';
-const SHOP_ADDRESS = 'Mahalaxmi Pride, Rajarampuri lane 6, Takala Side, Kolhapur, Maharashtra, India 416008';
+const SHOP_ADDRESS = 'Mahalaxmi Pride, Rajarampuri Lane 6, Takala Side, Kolhapur, Maharashtra 416008';
 
-// 👇 तुमचा backend IP + port इथे टाका (BASE_URL सारखाच, पण /api/admin शिवाय)
-const SERVER_ROOT = 'http://192.168.1.2:5000';
+// तुमचा tracking base URL इथे टाका
+const TRACK_BASE_URL = 'https://m2store.example.com/order';
+
+// 👇 तुमचा backend server root — emulator: 10.0.2.2, खरा फोन: laptop चा wifi IP
+const SERVER_ROOT = 'http:// 192.168.1.9:5000';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const RECEIPT_WIDTH = Math.min(SCREEN_WIDTH - 32, 384);
 
 const Invoice = ({ route, navigation }) => {
   const { order } = route.params;
-  const [generating, setGenerating] = useState(false);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
@@ -30,21 +37,16 @@ const Invoice = ({ route, navigation }) => {
     );
   };
 
-  // PDF आता backend तयार करतो — इथे फक्त तो URL उघडायचा
+  const orderIdShort = order._id.slice(-6).toUpperCase();
+  const trackingUrl = `${TRACK_BASE_URL}/${order._id}`;
+
+  // Print/Download — backend च्या खऱ्या HTTP URL ला Chrome मध्ये उघडतो
   const handlePrintOrShare = async () => {
     try {
-      setGenerating(true);
-      const url = `${SERVER_ROOT}/api/invoice/${order._id}`;
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert('Error', 'Invoice link उघडता येत नाही.');
-        return;
-      }
-      await Linking.openURL(url);
+      const invoiceUrl = `${SERVER_ROOT}/api/orders/${order._id}/invoice-html`;
+      await Linking.openURL(invoiceUrl);
     } catch (error) {
       Alert.alert('Error', 'Invoice उघडताना अडचण आली: ' + error.message);
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -57,86 +59,198 @@ const Invoice = ({ route, navigation }) => {
         <Text style={styles.headerTitle}>Invoice</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.shopName}>{SHOP_NAME}</Text>
-          <Text style={styles.shopAddress}>{SHOP_ADDRESS}</Text>
-        </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={[styles.receipt, { width: RECEIPT_WIDTH }]}>
+          <View style={styles.shopBlock}>
+            <Text style={styles.shopName}>{SHOP_NAME}</Text>
+            <Text style={styles.shopAddress}>{SHOP_ADDRESS}</Text>
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Order #{order._id.slice(-6).toUpperCase()}</Text>
-          <Text style={styles.infoText}>Order Date: {formatDate(order.createdAt)}</Text>
-          <Text style={styles.infoText}>Confirmed On: {formatDate(order.confirmedAt)}</Text>
-          <Text style={styles.infoText}>Status: {order.orderStatus}</Text>
-          <Text style={styles.infoText}>
-            Expected Delivery: {order.expectedDeliveryDays ? `${order.expectedDeliveryDays} days` : '—'}
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Customer Details</Text>
-          <Text style={styles.infoText}>{order.shippingAddress?.fullName || order.user?.name}</Text>
-          <Text style={styles.infoText}>{order.shippingAddress?.mobile}</Text>
-          <Text style={styles.infoText}>
-            {order.shippingAddress?.addressLine}, {order.shippingAddress?.city} - {order.shippingAddress?.pincode}
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Items</Text>
-          {order.items.map((item, index) => (
-            <View key={index} style={styles.itemRow}>
-              <Text style={styles.itemName}>{item.name} × {item.quantity}</Text>
-              <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
+          <View style={styles.orderTagWrap}>
+            <View style={styles.orderTag}>
+              <Text style={styles.orderTagText}>ORDER #{orderIdShort}</Text>
             </View>
-          ))}
+          </View>
+
+          <View style={styles.block}>
+            <Text style={styles.blockTitle}>customer</Text>
+            <View style={styles.row}>
+              <Text style={styles.k}>Name</Text>
+              <Text style={styles.v} numberOfLines={1}>
+                {order.shippingAddress?.fullName || order.user?.name}
+              </Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.k}>Mobile</Text>
+              <Text style={styles.v}>{order.shippingAddress?.mobile}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.k}>Address</Text>
+              <Text style={styles.v} numberOfLines={2}>
+                {order.shippingAddress?.addressLine}, {order.shippingAddress?.city} - {order.shippingAddress?.pincode}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.block}>
+            <Text style={styles.blockTitle}>order</Text>
+            <View style={styles.row}>
+              <Text style={styles.k}>Date</Text>
+              <Text style={styles.v}>{formatDate(order.createdAt)}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.k}>Status</Text>
+              <Text style={styles.v}>{order.orderStatus}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.k}>Delivery</Text>
+              <Text style={styles.v}>
+                {order.expectedDeliveryDays ? `${order.expectedDeliveryDays} days` : '—'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.block}>
+            <Text style={styles.blockTitle}>items</Text>
+            {order.items.map((item, index) => (
+              <View key={index} style={styles.row}>
+                <Text style={styles.k} numberOfLines={1}>
+                  {item.name} × {item.quantity}
+                </Text>
+                <Text style={styles.v}>₹{item.price * item.quantity}</Text>
+              </View>
+            ))}
+          </View>
+
           <View style={styles.divider} />
-          <View style={styles.itemRow}>
+
+          <View style={[styles.row, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
           </View>
+
+          <View style={styles.codesBlock}>
+            <View style={styles.codeItem}>
+              <View style={styles.qrWrap}>
+                <QRCode value={trackingUrl} size={110} color="#000000" backgroundColor="#ffffff" />
+              </View>
+              <Text style={styles.codeLabel}>SCAN TO TRACK ORDER</Text>
+            </View>
+
+            <View style={styles.codeItem}>
+              <Barcode
+                value={orderIdShort}
+                format="CODE128"
+                height={50}
+                singleBarWidth={1.5}
+                lineColor="#000000"
+                backgroundColor="transparent"
+              />
+              <Text style={styles.codeLabel}>ORDER #{orderIdShort}</Text>
+            </View>
+          </View>
+
+          <Text style={styles.footer}>Thank you for shopping with {SHOP_NAME}</Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.printButton, generating && styles.disabledButton]}
-          onPress={handlePrintOrShare}
-          disabled={generating}
-        >
-          {generating ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.printButtonText}>🖨️ Print / Save Invoice</Text>
-          )}
+        <TouchableOpacity style={styles.printButton} onPress={handlePrintOrShare}>
+          <Text style={styles.printButtonText}>🖨️ Print / Download Invoice</Text>
         </TouchableOpacity>
+
+        <Text style={styles.helperText}>
+          Chrome मध्ये उघडेल — आपोआप Print dialog उघडेल, तिथे "Save as PDF" निवडून डाउनलोड करा
+        </Text>
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F5F5F7', paddingTop: 40 },
+  screen: { flex: 1, backgroundColor: '#e9e7df', paddingTop: 40 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingBottom: 10 },
-  backText: { fontSize: 16, color: '#6C5CE7', fontWeight: 'bold', marginRight: 15 },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
-  container: { padding: 15, paddingBottom: 40 },
+  backText: { fontSize: 16, color: '#000000', fontWeight: 'bold', marginRight: 15 },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#000000' },
+  scrollContainer: { alignItems: 'center', padding: 16, paddingBottom: 40 },
 
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12 },
-  shopName: { fontSize: 20, fontWeight: 'bold', color: '#6C5CE7', textAlign: 'center' },
-  shopAddress: { fontSize: 12, color: '#666', textAlign: 'center', marginTop: 4 },
+  receipt: {
+    backgroundColor: '#fbfaf6',
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+    borderRadius: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
 
-  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: '#222', marginBottom: 8 },
-  infoText: { color: '#555', fontSize: 13, marginBottom: 3 },
+  shopBlock: {
+    alignItems: 'center',
+    paddingBottom: 14,
+    marginBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+    borderStyle: 'dashed',
+  },
+  shopName: { fontSize: 20, fontWeight: 'bold', color: '#000000', letterSpacing: 0.5 },
+  shopAddress: { fontSize: 11, color: '#000000', textAlign: 'center', marginTop: 4, lineHeight: 16 },
 
-  itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  itemName: { color: '#444', fontSize: 13, flex: 1 },
-  itemPrice: { color: '#222', fontWeight: '600', fontSize: 13 },
-  divider: { height: 1, backgroundColor: '#eee', marginVertical: 8 },
-  totalLabel: { fontWeight: 'bold', color: '#222' },
-  totalValue: { fontWeight: 'bold', color: '#6C5CE7' },
+  orderTagWrap: { alignItems: 'center', marginBottom: 14 },
+  orderTag: {
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  orderTagText: { color: '#000000', fontWeight: 'bold', fontSize: 11 },
 
-  printButton: { backgroundColor: '#43A047', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
-  disabledButton: { opacity: 0.6 },
+  block: { marginBottom: 14 },
+  blockTitle: { fontSize: 10, color: '#000000', marginBottom: 6 },
+
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  k: { color: '#000000', fontSize: 12.5, flexShrink: 1 },
+  v: { color: '#000000', fontSize: 12.5, textAlign: 'right', maxWidth: '60%' },
+
+  divider: {
+    borderTopWidth: 1,
+    borderTopColor: '#000000',
+    borderStyle: 'dashed',
+    marginVertical: 12,
+  },
+
+  totalRow: { marginBottom: 4 },
+  totalLabel: { fontWeight: 'bold', fontSize: 14, color: '#000000' },
+  totalValue: { fontWeight: 'bold', fontSize: 14, color: '#000000' },
+
+  codesBlock: {
+    alignItems: 'center',
+    marginTop: 18,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#000000',
+    borderStyle: 'dashed',
+  },
+  codeItem: { alignItems: 'center', marginBottom: 16 },
+  qrWrap: { backgroundColor: '#fff', padding: 6 },
+  codeLabel: { fontSize: 9.5, letterSpacing: 1, color: '#000000', marginTop: 6 },
+
+  footer: { textAlign: 'center', marginTop: 4, fontSize: 10, color: '#000000' },
+
+  printButton: {
+    backgroundColor: '#43A047',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+    marginTop: 20,
+  },
   printButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
+  helperText: { fontSize: 11, color: '#000000', textAlign: 'center', marginTop: 10, paddingHorizontal: 20 },
 });
 
 export default Invoice;

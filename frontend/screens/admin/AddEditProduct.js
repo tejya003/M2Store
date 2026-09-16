@@ -14,7 +14,7 @@ import BarcodeSvg from 'react-native-barcode-svg';
 import { useTheme } from '../../context/ThemeContext';
 import { createProduct, updateProduct } from '../../api/productApi';
 
-const IMAGE_BASE = 'http://192.168.1.2:5000';
+const IMAGE_BASE = 'http:// 192.168.1.9:5000';
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;

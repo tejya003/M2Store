@@ -30,10 +30,7 @@ const sendOtp = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    console.log('Verify OTP request:', email, otp);
-
     const record = tempOtpStore[email];
-    console.log('Stored record:', record);
 
     if (!record) return res.status(400).json({ message: 'No OTP found, please request again' });
     if (Date.now() > record.expiry) return res.status(400).json({ message: 'OTP expired' });
@@ -49,26 +46,17 @@ const verifyOtp = async (req, res) => {
 // REGISTER
 const registerUser = async (req, res) => {
   try {
-    console.log('Register request body:', req.body);
-
     const { name, username, email, mobile, password } = req.body;
 
     const record = tempOtpStore[email];
-    console.log('OTP record:', record);
-
     if (!record || !record.verified) {
       return res.status(400).json({ message: 'Please verify email OTP first' });
     }
 
-    console.log('Checking existing user...');
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    console.log('Existing user check done:', existingUser);
-
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-    console.log('Hashing password...');
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Password hashed');
 
     const user = new User({
       name,
@@ -79,10 +67,7 @@ const registerUser = async (req, res) => {
       isEmailVerified: true
     });
 
-    console.log('Saving user...');
     await user.save();
-    console.log('User saved successfully');
-
     delete tempOtpStore[email];
 
     res.status(201).json({ message: 'Registration successful' });
@@ -117,7 +102,8 @@ const loginUser = async (req, res) => {
         name: user.name,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        officeName: user.officeName || null // 👈 नवीन — office login असेल तर त्यांचं office नाव
       }
     });
   } catch (err) {
