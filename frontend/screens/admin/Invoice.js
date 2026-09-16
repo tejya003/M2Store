@@ -19,7 +19,7 @@ const SHOP_ADDRESS = 'Mahalaxmi Pride, Rajarampuri Lane 6, Takala Side, Kolhapur
 const TRACK_BASE_URL = 'https://m2store.example.com/order';
 
 // 👇 तुमचा backend server root — emulator: 10.0.2.2, खरा फोन: laptop चा wifi IP
-const SERVER_ROOT = 'http:// 192.168.1.9:5000';
+const SERVER_ROOT = 'https://m2store-backend.onrender.com';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const RECEIPT_WIDTH = Math.min(SCREEN_WIDTH - 32, 384);

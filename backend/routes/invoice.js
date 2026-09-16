@@ -81,7 +81,7 @@ router.get('/invoice/:orderId', async (req, res) => {
     doc.moveDown(0.5);
 
     // ---- QR Code linking to this same invoice PDF (customer साठी) ----
-    const qrData = `http://192.168.1.2:5000/api/invoice/${order._id}`;
+    const qrData = `https://m2store-backend.onrender.com/api/invoice/${order._id}`;
     const qrPng = await QRCode.toBuffer(qrData, { width: 100, margin: 1 });
 
     const qrX = (288 - 80) / 2; // center horizontally

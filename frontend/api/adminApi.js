@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http:// 192.168.1.9:5000/api/admin';
+const BASE_URL = 'https://m2store-backend.onrender.com/api/admin';
 
 const getToken = async () => {
   return await AsyncStorage.getItem('token');

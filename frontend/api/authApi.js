@@ -1,4 +1,4 @@
-const BASE_URL = 'http:// 192.168.1.9:5000/api/auth';
+const BASE_URL = 'https://m2store-backend.onrender.com/api/auth';
 
 export const sendOtp = async (email) => {
   const response = await fetch(`${BASE_URL}/send-otp`, {

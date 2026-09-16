@@ -22,7 +22,7 @@ const Cart = ({ navigation }) => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return `http:// 192.168.1.9:5000${imagePath}`;
+    return `https://m2store-backend.onrender.com${imagePath}`;
   };
 
   const loadCartAndAddress = async () => {
