@@ -6,7 +6,6 @@ export const sendOtp = async (email) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email })
   });
-
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to send OTP');
   return data;
