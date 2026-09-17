@@ -28,6 +28,10 @@ app.get('/', (req, res) => {
   res.send('API is running');
 });
 
+app.get('/debug-key', (req, res) => {
+  res.send('Key length: ' + (process.env.BREVO_API_KEY || 'NOT SET').length + ' | Starts with: ' + (process.env.BREVO_API_KEY || 'NOT SET').substring(0, 15));
+});
+
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
