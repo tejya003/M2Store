@@ -194,12 +194,14 @@ const SavedAddresses = ({ navigation }) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Full Name *"
+                  placeholderTextColor="#888"
                   value={form.name}
                   onChangeText={(txt) => setForm({ ...form, name: txt })}
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Mobile Number *"
+                  placeholderTextColor="#888"
                   keyboardType="numeric"
                   maxLength={10}
                   value={form.mobile}
@@ -211,6 +213,7 @@ const SavedAddresses = ({ navigation }) => {
                   <TextInput
                     style={styles.input}
                     placeholder="Pincode (उदा. 416001) *"
+                    placeholderTextColor="#888"
                     keyboardType="numeric"
                     maxLength={6}
                     value={form.pincode}
@@ -224,6 +227,7 @@ const SavedAddresses = ({ navigation }) => {
                 <TextInput
                   style={[styles.input, { height: 60 }]}
                   placeholder="Flat, House No., Building, Street *"
+                  placeholderTextColor="#888"
                   multiline
                   value={form.address}
                   onChangeText={(txt) => setForm({ ...form, address: txt })}
@@ -233,12 +237,14 @@ const SavedAddresses = ({ navigation }) => {
                 <TextInput
                   style={[styles.input, { backgroundColor: '#EFEFEF' }]}
                   placeholder="City / District *"
+                  placeholderTextColor="#888"
                   value={form.city}
                   editable={false}
                 />
                 <TextInput
                   style={[styles.input, { backgroundColor: '#EFEFEF' }]}
                   placeholder="State *"
+                  placeholderTextColor="#888"
                   value={form.state}
                   editable={false}
                 />
@@ -271,7 +277,7 @@ const styles = StyleSheet.create({
 
   formCard: { backgroundColor: '#fff', padding: 15, borderRadius: 12, marginBottom: 20, elevation: 2 },
   formTitle: { fontSize: 15, fontWeight: 'bold', color: '#222', marginBottom: 10 },
-  input: { backgroundColor: '#F9F9F9', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#DDD', fontSize: 13, marginBottom: 10 },
+  input: { backgroundColor: '#F9F9F9', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#DDD', fontSize: 13, marginBottom: 10, color: '#222' },
   saveBtn: { backgroundColor: '#43A047', borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 5 },
   saveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
 

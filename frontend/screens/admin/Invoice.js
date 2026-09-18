@@ -16,7 +16,7 @@ const SHOP_NAME = 'M2 Store';
 const SHOP_ADDRESS = 'Mahalaxmi Pride, Rajarampuri Lane 6, Takala Side, Kolhapur, Maharashtra 416008';
 
 // तुमचा tracking base URL इथे टाका
-const TRACK_BASE_URL = 'https://m2store.example.com/order';
+const TRACK_BASE_URL = 'https://m2store-backend.onrender.com/api/orders';
 
 // 👇 तुमचा backend server root — emulator: 10.0.2.2, खरा फोन: laptop चा wifi IP
 const SERVER_ROOT = 'https://m2store-backend.onrender.com';
@@ -38,7 +38,7 @@ const Invoice = ({ route, navigation }) => {
   };
 
   const orderIdShort = order._id.slice(-6).toUpperCase();
-  const trackingUrl = `${TRACK_BASE_URL}/${order._id}`;
+  const trackingUrl = `${TRACK_BASE_URL}/${order._id}/invoice-html`;
 
   // Print/Download — backend च्या खऱ्या HTTP URL ला Chrome मध्ये उघडतो
   const handlePrintOrShare = async () => {
