@@ -164,4 +164,49 @@ const googleLogin = async (req, res) => {
   }
 };
 
-module.exports = { sendOtp, verifyOtp, registerUser, loginUser, googleLogin };
+// FORGOT PASSWORD - Send OTP
+const forgotPasswordSendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'या email ने कुठलाही account सापडला नाही' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    tempOtpStore[email] = { otp, expiry: Date.now() + 5 * 60 * 1000, forPasswordReset: true };
+
+    await sendEmail(email, 'Password Reset OTP', `Your password reset OTP is ${otp}. It is valid for 5 minutes.`);
+
+    res.json({ message: 'OTP sent successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// FORGOT PASSWORD - Verify OTP and Reset Password
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const record = tempOtpStore[email];
+
+    if (!record) return res.status(400).json({ message: 'No OTP found, please request again' });
+    if (Date.now() > record.expiry) return res.status(400).json({ message: 'OTP expired' });
+    if (record.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    delete tempOtpStore[email];
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { sendOtp, verifyOtp, registerUser, loginUser, googleLogin, forgotPasswordSendOtp, resetPassword };

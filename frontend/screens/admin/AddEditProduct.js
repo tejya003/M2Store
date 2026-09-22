@@ -10,7 +10,6 @@ import {
   Alert,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import BarcodeSvg from 'react-native-barcode-svg';
 import { useTheme } from '../../context/ThemeContext';
 import { createProduct, updateProduct } from '../../api/productApi';
 
@@ -179,12 +178,6 @@ const AddEditProduct = ({ navigation, route }) => {
       <Text style={[styles.sectionLabel, { color: theme.text }]}>Barcode</Text>
       {isEditMode && existingProduct?.barcode ? (
         <View style={[styles.barcodeBox, { backgroundColor: '#fff', borderColor: theme.border }]}>
-          <BarcodeSvg
-            value={existingProduct.barcode}
-            format="CODE128"
-            height={70}
-            width={2}
-          />
           <Text style={styles.barcodeText}>{existingProduct.barcode}</Text>
         </View>
       ) : (
