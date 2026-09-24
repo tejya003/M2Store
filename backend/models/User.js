@@ -13,11 +13,15 @@ const userSchema = new mongoose.Schema({
   otpExpiry: { type: Date },
   isEmailVerified: { type: Boolean, default: false },
 
-  // 👇 नवीन: Delivery Partner साठी
-  vehicleType: { type: String },       // उदा. "Bike", "Auto"
+  // Delivery Partner साठी
+  vehicleType: { type: String },      
   vehicleNumber: { type: String },
-  isApproved: { type: Boolean, default: false } // delivery role साठी default false ठेवू (controller मध्ये)
+  isApproved: { type: Boolean, default: false },
 
+  // 👇 नवीन: Delivery Partner साठी अजून माहिती
+  city: { type: String },           
+  aadharNumber: { type: String },
+  aadharPhoto: { type: String }        
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

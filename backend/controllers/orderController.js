@@ -280,9 +280,17 @@ const getInvoiceHtml = async (req, res) => {
 
 // ============ DELIVERY PARTNER FUNCTIONS ============
 
-// GET available orders (out for delivery, कुणीही उचलेला नाही)
+// GET available orders — फक्त त्याच delivery partner च्या city साठी, out for delivery झालेले
 const getAvailableOrders = async (req, res) => {
   try {
+    const partnerCity = req.user.city;
+
+    if (!partnerCity) {
+      return res.status(400).json({ message: 'तुमची city set नाहीये, admin ला संपर्क करा' });
+    }
+
+    const partnerCityLower = partnerCity.trim().toLowerCase();
+
     const orders = await Order.find({
       orderStatus: 'out for delivery',
       deliveryStatus: 'unassigned'
@@ -290,7 +298,14 @@ const getAvailableOrders = async (req, res) => {
       .populate('user', 'name mobile')
       .sort({ createdAt: -1 });
 
-    res.json(orders);
+    // route मधलं शेवटचं hub (customer ची city) partner च्या city शी जुळतं का ते बघ
+    const filtered = orders.filter((order) => {
+      const routeArr = order.route || [];
+      const lastHub = routeArr[routeArr.length - 1];
+      return lastHub && lastHub.trim().toLowerCase() === partnerCityLower;
+    });
+
+    res.json(filtered);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

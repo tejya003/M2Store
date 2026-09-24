@@ -109,7 +109,8 @@ const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         officeName: user.officeName || null, // office login असेल तर त्यांचं office नाव
-        vehicleType: user.vehicleType || null // 👈 नवीन — delivery partner असेल तर वाहन प्रकार
+        vehicleType: user.vehicleType || null, // delivery partner असेल तर वाहन प्रकार
+        city: user.city || null // 👈 नवीन — delivery partner ची city
       }
     });
   } catch (err) {
@@ -218,9 +219,9 @@ const resetPassword = async (req, res) => {
 // REGISTER — Delivery Partner
 const registerDeliveryPartner = async (req, res) => {
   try {
-    const { name, username, email, mobile, password, vehicleType, vehicleNumber } = req.body;
+    const { name, username, email, mobile, password, vehicleType, vehicleNumber, city, aadharNumber } = req.body;
 
-    if (!name || !username || !email || !mobile || !password || !vehicleType || !vehicleNumber) {
+    if (!name || !username || !email || !mobile || !password || !vehicleType || !vehicleNumber || !city || !aadharNumber) {
       return res.status(400).json({ message: 'सगळी माहिती भरणं गरजेचं आहे' });
     }
 
@@ -231,6 +232,9 @@ const registerDeliveryPartner = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Aadhar फोटो अपलोड झाला असेल तर त्याचा path साठव (multer मुळे req.file मिळतं)
+    const aadharPhotoPath = req.file ? `/uploads/${req.file.filename}` : null;
+
     const user = new User({
       name,
       username,
@@ -240,14 +244,17 @@ const registerDeliveryPartner = async (req, res) => {
       role: 'delivery',
       vehicleType,
       vehicleNumber,
-      isApproved: true,     // admin approve करेपर्यंत login होणार नाही
+      city,
+      aadharNumber,
+      aadharPhoto: aadharPhotoPath,
+      isApproved: true,
       isEmailVerified: true
     });
 
     await user.save();
 
     res.status(201).json({
-      message: 'अर्ज सादर झाला! Admin approve केल्यावर तुम्ही login करू शकाल.'
+      message: 'नोंदणी यशस्वी झाली! आता तुम्ही login करू शकता.'
     });
   } catch (err) {
     console.error('DELIVERY PARTNER REGISTER ERROR:', err);

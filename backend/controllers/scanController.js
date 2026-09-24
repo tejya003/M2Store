@@ -63,7 +63,6 @@ const scanOrder = async (req, res) => {
 
     // scan history मध्ये नोंद कर (मूळ office नाव जसंच्या तसं साठवतो, फक्त तुलनेसाठी lowercase वापरलं)
     order.scanHistory.push({ office, scannedAt: new Date() });
-    await order.save();
 
     // पुढचं office कोणतं आहे ते काढ (route मधलं याच्या पुढचं) — case-insensitive index शोध
     const currentIndex = routeLower.indexOf(officeLower);
@@ -73,6 +72,14 @@ const scanOrder = async (req, res) => {
         : null;
 
     const isFinalDestination = nextOffice === null;
+
+    // 👇 नवीन: शेवटच्या hub वर scan झाला असेल तर आपोआप "out for delivery" कर
+    // म्हणजे delivery partners ला हा order लगेच दिसू लागेल
+    if (isFinalDestination) {
+      order.orderStatus = 'out for delivery';
+    }
+
+    await order.save();
 
     res.json({
       message: `Order '${office}' इथे scan झाला`,

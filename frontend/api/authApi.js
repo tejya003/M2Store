@@ -86,11 +86,14 @@ export const resetPassword = async (email, otp, newPassword) => {
   return data;
 };
 
-export const registerDeliveryPartner = async (name, username, email, mobile, password, vehicleType, vehicleNumber) => {
+// 👇 बदललं — आता एक object घेतं (name, username, email, mobile, password, vehicleType, vehicleNumber, city, aadharNumber)
+export const registerDeliveryPartner = async ({
+  name, username, email, mobile, password, vehicleType, vehicleNumber, city, aadharNumber
+}) => {
   const response = await fetch(`${BASE_URL}/register-delivery`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, username, email, mobile, password, vehicleType, vehicleNumber })
+    body: JSON.stringify({ name, username, email, mobile, password, vehicleType, vehicleNumber, city, aadharNumber })
   });
 
   const data = await response.json();
