@@ -93,6 +93,11 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: 'तुमचा अर्ज अजून admin कडून approve झालेला नाही' });
     }
 
+    // 👇 नवीन: admin ने block केलं असेल तर login अडवा (कुठलाही role असो)
+    if (user.isBlocked) {
+      return res.status(403).json({ message: 'तुमचं account admin ने block केलेलं आहे' });
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -110,7 +115,7 @@ const loginUser = async (req, res) => {
         role: user.role,
         officeName: user.officeName || null, // office login असेल तर त्यांचं office नाव
         vehicleType: user.vehicleType || null, // delivery partner असेल तर वाहन प्रकार
-        city: user.city || null // 👈 नवीन — delivery partner ची city
+        city: user.city || null // delivery partner ची city
       }
     });
   } catch (err) {
@@ -262,6 +267,37 @@ const registerDeliveryPartner = async (req, res) => {
   }
 };
 
+// 👇 नवीन: GET सगळे delivery partners (admin साठी)
+const getAllDeliveryPartners = async (req, res) => {
+  try {
+    const partners = await User.find({ role: 'delivery' })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json(partners);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// 👇 नवीन: POST block/unblock एखादा delivery partner (admin साठी)
+const toggleBlockPartner = async (req, res) => {
+  try {
+    const partner = await User.findById(req.params.id);
+    if (!partner) return res.status(404).json({ message: 'Partner सापडला नाही' });
+
+    partner.isBlocked = !partner.isBlocked;
+    await partner.save();
+
+    res.json({
+      message: partner.isBlocked ? 'Partner block केला' : 'Partner unblock केला',
+      isBlocked: partner.isBlocked
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   sendOtp,
   verifyOtp,
@@ -270,5 +306,7 @@ module.exports = {
   googleLogin,
   forgotPasswordSendOtp,
   resetPassword,
-  registerDeliveryPartner
+  registerDeliveryPartner,
+  getAllDeliveryPartners,
+  toggleBlockPartner
 };

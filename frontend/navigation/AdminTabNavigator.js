@@ -11,13 +11,14 @@ import CustomerOrders from '../screens/admin/CustomerOrders';
 import OrdersList from '../screens/admin/OrdersList';
 import Invoice from '../screens/admin/Invoice';
 import More from '../screens/admin/More';
-import ManageOffices from '../screens/admin/ManageOffices'; // 👈 नवीन
+import ManageOffices from '../screens/admin/ManageOffices';
+import DeliveryPartnersList from '../screens/admin/DeliveryPartnersList'; // 👈 नवीन
 
 const Tab = createBottomTabNavigator();
 const ProductsStack = createNativeStackNavigator();
 const UsersStack = createNativeStackNavigator();
 const OrdersStack = createNativeStackNavigator();
-const MoreStack = createNativeStackNavigator(); // 👈 नवीन
+const MoreStack = createNativeStackNavigator();
 
 const ProductsStackScreen = () => (
   <ProductsStack.Navigator screenOptions={{ headerShown: false }}>
@@ -44,6 +45,11 @@ const MoreStackScreen = () => (
   <MoreStack.Navigator screenOptions={{ headerShown: false }}>
     <MoreStack.Screen name="MoreHome" component={More} />
     <MoreStack.Screen name="ManageOffices" component={ManageOffices} />
+    <MoreStack.Screen
+      name="DeliveryPartnersList"
+      component={DeliveryPartnersList}
+      options={{ headerShown: true, title: 'Delivery Partners' }}
+    />
   </MoreStack.Navigator>
 );
 

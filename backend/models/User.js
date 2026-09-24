@@ -18,10 +18,14 @@ const userSchema = new mongoose.Schema({
   vehicleNumber: { type: String },
   isApproved: { type: Boolean, default: false },
 
-  // 👇 नवीन: Delivery Partner साठी अजून माहिती
+  // Delivery Partner साठी अजून माहिती
   city: { type: String },           
   aadharNumber: { type: String },
-  aadharPhoto: { type: String }        
+  aadharPhoto: { type: String },
+
+  // 👇 नवीन: admin ला block/unblock करण्यासाठी
+  isBlocked: { type: Boolean, default: false }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
