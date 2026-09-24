@@ -39,16 +39,27 @@ const orderSchema = new mongoose.Schema({
   expectedDeliveryDays: { type: Number },
   confirmedAt: { type: Date },
 
-  // 👇 नवीन: कोणत्या hubs मधून जाणार आहे (उदा. ['Kolhapur', 'Satara', 'Pune'])
+  // कोणत्या hubs मधून जाणार आहे (उदा. ['Kolhapur', 'Satara', 'Pune'])
   route: [{ type: String }],
 
-  // 👇 नवीन: प्रत्येक hub वर scan झाल्याची नोंद
+  // प्रत्येक hub वर scan झाल्याची नोंद
   scanHistory: [
     {
       office: { type: String },
       scannedAt: { type: Date, default: Date.now }
     }
-  ]
+  ],
+
+  // 👇 नवीन: Delivery Partner संबंधित माहिती
+  assignedDeliveryPartner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  deliveryStatus: {
+    type: String,
+    enum: ['unassigned', 'accepted', 'delivered'],
+    default: 'unassigned'
+  },
+  deliveryAcceptedAt: { type: Date },
+  deliveredAt: { type: Date },
+  deliveryProof: { type: String } // फोटो URL (Cloudinary), optional
 
 }, { timestamps: true });
 

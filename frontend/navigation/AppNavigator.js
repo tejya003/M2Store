@@ -12,6 +12,11 @@ import OrderSuccess from '../screens/user/OrderSuccess';
 import OfficeScan from '../screens/office/OfficeScan';
 import OrderTrackingDetails from '../screens/office/OrderTrackingDetails';
 
+// 👇 नवीन: Delivery Partner संबंधित screens
+import DeliveryPartnerInfo from '../screens/delivery/DeliveryPartnerInfo';
+import DeliveryPartnerRegister from '../screens/delivery/DeliveryPartnerRegister';
+import DeliveryTabNavigator from './DeliveryTabNavigator';
+
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -29,6 +34,11 @@ const AppNavigator = () => {
 
         <Stack.Screen name="Checkout" component={Checkout} />
         <Stack.Screen name="OrderSuccess" component={OrderSuccess} />
+
+        {/* 👇 नवीन: Delivery Partner संबंधित screens */}
+        <Stack.Screen name="DeliveryPartnerInfo" component={DeliveryPartnerInfo} />
+        <Stack.Screen name="DeliveryPartnerRegister" component={DeliveryPartnerRegister} />
+        <Stack.Screen name="DeliveryDashboard" component={DeliveryTabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );

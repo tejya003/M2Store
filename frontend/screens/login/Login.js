@@ -35,12 +35,14 @@ const LoginScreen = ({ navigation }) => {
     });
   }, []);
 
-  // 👇 नवीन: role वरून योग्य screen ठरवणारं helper
+  // role वरून योग्य screen ठरवणारं helper
   const goToRoleScreen = (role) => {
     if (role === 'admin') {
       navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
     } else if (role === 'office') {
       navigation.reset({ index: 0, routes: [{ name: 'OfficeScan' }] });
+    } else if (role === 'delivery') {
+      navigation.reset({ index: 0, routes: [{ name: 'DeliveryDashboard' }] }); // 👈 नवीन
     } else {
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     }
@@ -68,7 +70,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
 
-      goToRoleScreen(data.user.role); // 👈 बदललं
+      goToRoleScreen(data.user.role);
     } catch (error) {
       Alert.alert('Error', error.message || 'Login failed');
     } finally {
@@ -91,7 +93,7 @@ const LoginScreen = ({ navigation }) => {
           await AsyncStorage.setItem('token', res.token);
           await AsyncStorage.setItem('user', JSON.stringify(res.user));
 
-          goToRoleScreen(res.user.role); // 👈 बदललं (office Google ने login करणार नाहीत, पण consistent ठेवलं)
+          goToRoleScreen(res.user.role);
         } else {
           Alert.alert('Error', res.message || 'Google Login failed');
         }
@@ -283,6 +285,17 @@ const LoginScreen = ({ navigation }) => {
               ]}
             >
               {t.noAccountRegister || "Don't have an account? Register"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* ================= DELIVERY PARTNER ================= */}
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('DeliveryPartnerInfo')}
+            style={styles.deliveryPartnerButton}
+          >
+            <Text style={styles.deliveryPartnerText}>
+              🚴 Delivery Partner व्हायचंय?
             </Text>
           </TouchableOpacity>
 
@@ -523,6 +536,23 @@ const styles = StyleSheet.create({
     marginTop: 22,
     fontSize: 14,
     fontWeight: '600',
+  },
+
+  /* ================= DELIVERY PARTNER ================= */
+
+  deliveryPartnerButton: {
+    marginTop: 18,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#F57C00',
+    borderRadius: 7,
+    alignItems: 'center',
+  },
+
+  deliveryPartnerText: {
+    color: '#F57C00',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 

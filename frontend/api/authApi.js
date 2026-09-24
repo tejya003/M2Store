@@ -85,3 +85,15 @@ export const resetPassword = async (email, otp, newPassword) => {
   if (!response.ok) throw new Error(data.message || 'Failed to reset password');
   return data;
 };
+
+export const registerDeliveryPartner = async (name, username, email, mobile, password, vehicleType, vehicleNumber) => {
+  const response = await fetch(`${BASE_URL}/register-delivery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, username, email, mobile, password, vehicleType, vehicleNumber })
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'अर्ज सादर करता आला नाही');
+  return data;
+};

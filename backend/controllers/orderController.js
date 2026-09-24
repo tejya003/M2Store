@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const { SHOP_LOCATION, getDistanceKm, estimateDeliveryDays } = require('../utils/distance');
-const { getRouteForCity } = require('../utils/routeConfig'); // 👈 नवीन
+const { getRouteForCity } = require('../utils/routeConfig');
 
 // पत्त्यावरून latitude/longitude शोधणारं helper function (मोफत OpenStreetMap सेवा वापरून)
 const getCoordinatesFromAddress = async (addressLine, city, pincode) => {
@@ -68,7 +68,7 @@ const createOrder = async (req, res) => {
       autoDeliveryDays = estimateDeliveryDays(distanceKm);
     }
 
-    // 👇 नवीन: city वरून route आपोआप ठरव
+    // city वरून route आपोआप ठरव
     const route = getRouteForCity(shippingAddress?.city);
 
     // Step 3: Order तयार कर
@@ -80,8 +80,8 @@ const createOrder = async (req, res) => {
       orderStatus: 'pending',
       paymentStatus: paymentMethod === 'Online' ? 'paid' : 'pending',
       expectedDeliveryDays: autoDeliveryDays,
-      route, // 👈 नवीन
-      scanHistory: [] // 👈 नवीन: सुरुवातीला रिकामं, scan होईल तसं भरत जाईल
+      route,
+      scanHistory: []
     });
 
     await order.save();
@@ -154,7 +154,9 @@ const updateOrderStatus = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-};// GET printable invoice HTML (browser मध्ये उघडण्यासाठी) — receipt-style डिझाईन
+};
+
+// GET printable invoice HTML (browser मध्ये उघडण्यासाठी) — receipt-style डिझाईन
 const getInvoiceHtml = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
@@ -276,4 +278,87 @@ const getInvoiceHtml = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getMyOrders, getAllOrders, updateOrderStatus, getInvoiceHtml };
+// ============ DELIVERY PARTNER FUNCTIONS ============
+
+// GET available orders (out for delivery, कुणीही उचलेला नाही)
+const getAvailableOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      orderStatus: 'out for delivery',
+      deliveryStatus: 'unassigned'
+    })
+      .populate('user', 'name mobile')
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST accept order (delivery partner एखादा order स्वतःकडे घेतो)
+const acceptOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (order.deliveryStatus !== 'unassigned') {
+      return res.status(400).json({ message: 'हा order आधीच कुणीतरी घेतला आहे' });
+    }
+
+    order.assignedDeliveryPartner = req.user._id;
+    order.deliveryStatus = 'accepted';
+    order.deliveryAcceptedAt = new Date();
+    await order.save();
+
+    res.json({ message: 'Order स्वीकारला', order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET logged-in delivery partner ने accept केलेले orders
+const getMyDeliveries = async (req, res) => {
+  try {
+    const orders = await Order.find({ assignedDeliveryPartner: req.user._id })
+      .populate('user', 'name mobile')
+      .sort({ deliveryAcceptedAt: -1 });
+
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST mark order as delivered
+const markDelivered = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (String(order.assignedDeliveryPartner) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'हा order तुमचा नाही' });
+    }
+
+    order.deliveryStatus = 'delivered';
+    order.orderStatus = 'delivered';
+    order.deliveredAt = new Date();
+    await order.save();
+
+    res.json({ message: 'Order delivered म्हणून मार्क झाला', order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {
+  createOrder,
+  getMyOrders,
+  getAllOrders,
+  updateOrderStatus,
+  getInvoiceHtml,
+  getAvailableOrders,
+  acceptOrder,
+  getMyDeliveries,
+  markDelivered
+};

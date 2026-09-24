@@ -88,6 +88,11 @@ const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
+    // Delivery partner असेल आणि अजून admin ने approve केलं नसेल तर login अडवा
+    if (user.role === 'delivery' && !user.isApproved) {
+      return res.status(403).json({ message: 'तुमचा अर्ज अजून admin कडून approve झालेला नाही' });
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -103,7 +108,8 @@ const loginUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        officeName: user.officeName || null // 👈 नवीन — office login असेल तर त्यांचं office नाव
+        officeName: user.officeName || null, // office login असेल तर त्यांचं office नाव
+        vehicleType: user.vehicleType || null // 👈 नवीन — delivery partner असेल तर वाहन प्रकार
       }
     });
   } catch (err) {
@@ -209,4 +215,53 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { sendOtp, verifyOtp, registerUser, loginUser, googleLogin, forgotPasswordSendOtp, resetPassword };
+// REGISTER — Delivery Partner
+const registerDeliveryPartner = async (req, res) => {
+  try {
+    const { name, username, email, mobile, password, vehicleType, vehicleNumber } = req.body;
+
+    if (!name || !username || !email || !mobile || !password || !vehicleType || !vehicleNumber) {
+      return res.status(400).json({ message: 'सगळी माहिती भरणं गरजेचं आहे' });
+    }
+
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'हा username किंवा email आधीच वापरलेला आहे' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      username,
+      email,
+      mobile,
+      password: hashedPassword,
+      role: 'delivery',
+      vehicleType,
+      vehicleNumber,
+      isApproved: true,     // admin approve करेपर्यंत login होणार नाही
+      isEmailVerified: true
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      message: 'अर्ज सादर झाला! Admin approve केल्यावर तुम्ही login करू शकाल.'
+    });
+  } catch (err) {
+    console.error('DELIVERY PARTNER REGISTER ERROR:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {
+  sendOtp,
+  verifyOtp,
+  registerUser,
+  loginUser,
+  googleLogin,
+  forgotPasswordSendOtp,
+  resetPassword,
+  registerDeliveryPartner
+};
