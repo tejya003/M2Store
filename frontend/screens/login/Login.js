@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 
 import {
   View,
@@ -15,14 +15,14 @@ import {
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useLanguage } from '../../context/LanguageContext';
-import { useTheme } from '../../context/ThemeContext';
-import { loginUser, googleLoginApi } from '../../api/authApi';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {useLanguage} from '../../context/LanguageContext';
+import {useTheme} from '../../context/ThemeContext';
+import {loginUser, googleLoginApi} from '../../api/authApi';
 
-const LoginScreen = ({ navigation }) => {
-  const { t } = useLanguage();
-  const { theme } = useTheme();
+const LoginScreen = ({navigation}) => {
+  const {t} = useLanguage();
+  const {theme} = useTheme();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -31,18 +31,33 @@ const LoginScreen = ({ navigation }) => {
   // Configure Google Sign-In on component mount
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '1060370686827-7s9h8qlbk7cm67016mbea13iltg59ska.apps.googleusercontent.com',
+      webClientId:
+        '1060370686827-7s9h8qlbk7cm67016mbea13iltg59ska.apps.googleusercontent.com',
     });
   }, []);
 
-  // 👇 नवीन: role वरून योग्य screen ठरवणारं helper
-  const goToRoleScreen = (role) => {
+  // Role वरून योग्य screen ठरवणे
+  const goToRoleScreen = role => {
     if (role === 'admin') {
-      navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'AdminDashboard'}],
+      });
     } else if (role === 'office') {
-      navigation.reset({ index: 0, routes: [{ name: 'OfficeScan' }] });
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'OfficeScan'}],
+      });
+    } else if (role === 'delivery') {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'DeliveryDashboard'}],
+      });
     } else {
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Home'}],
+      });
     }
   };
 
@@ -68,7 +83,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
 
-      goToRoleScreen(data.user.role); // 👈 बदललं
+      goToRoleScreen(data.user.role);
     } catch (error) {
       Alert.alert('Error', error.message || 'Login failed');
     } finally {
@@ -79,19 +94,24 @@ const LoginScreen = ({ navigation }) => {
   // Google Sign-In Handler
   const handleGoogleSignIn = async () => {
     Keyboard.dismiss();
+
     try {
       setIsLoggingIn(true);
+
       await GoogleSignin.hasPlayServices();
+
       const userInfo = await GoogleSignin.signIn();
+
       const idToken = userInfo.data?.idToken || userInfo.idToken;
 
       if (idToken) {
         const res = await googleLoginApi(idToken);
+
         if (res.token) {
           await AsyncStorage.setItem('token', res.token);
           await AsyncStorage.setItem('user', JSON.stringify(res.user));
 
-          goToRoleScreen(res.user.role); // 👈 बदललं (office Google ने login करणार नाहीत, पण consistent ठेवलं)
+          goToRoleScreen(res.user.role);
         } else {
           Alert.alert('Error', res.message || 'Google Login failed');
         }
@@ -100,7 +120,11 @@ const LoginScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Google Sign-In Error:', error);
-      Alert.alert('Error', 'Google Sign-In was cancelled or failed');
+
+      Alert.alert(
+        'Error',
+        'Google Sign-In was cancelled or failed',
+      );
     } finally {
       setIsLoggingIn(false);
     }
@@ -111,16 +135,14 @@ const LoginScreen = ({ navigation }) => {
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
         <ScrollView
           contentContainerStyle={[
             styles.container,
-            { backgroundColor: theme.background },
+            {backgroundColor: theme.background},
           ]}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
+          keyboardDismissMode="on-drag">
 
           {/* ================= LOGO ================= */}
 
@@ -146,7 +168,6 @@ const LoginScreen = ({ navigation }) => {
                 <View style={styles.wheel} />
               </View>
             </View>
-
           </View>
 
           {/* ================= M2 STORE ================= */}
@@ -158,11 +179,15 @@ const LoginScreen = ({ navigation }) => {
 
           {/* ================= WELCOME ================= */}
 
-          <Text style={[styles.welcomeText, { color: theme.text }]}>
+          <Text style={[styles.welcomeText, {color: theme.text}]}>
             Welcome to M2 Store
           </Text>
 
-          <Text style={[styles.loginSubText, { color: theme.placeholder }]}>
+          <Text
+            style={[
+              styles.loginSubText,
+              {color: theme.placeholder},
+            ]}>
             Login to continue
           </Text>
 
@@ -175,8 +200,7 @@ const LoginScreen = ({ navigation }) => {
                 backgroundColor: theme.inputBackground,
                 borderColor: theme.border,
               },
-            ]}
-          >
+            ]}>
             <Text style={styles.inputIcon}>👤</Text>
 
             <TextInput
@@ -204,8 +228,7 @@ const LoginScreen = ({ navigation }) => {
                 backgroundColor: theme.inputBackground,
                 borderColor: theme.border,
               },
-            ]}
-          >
+            ]}>
             <Text style={styles.inputIcon}>🔒</Text>
 
             <TextInput
@@ -228,8 +251,15 @@ const LoginScreen = ({ navigation }) => {
 
           {/* ================= FORGOT PASSWORD ================= */}
 
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('ForgotPassword')
+            }>
+            <Text
+              style={[
+                styles.forgotPasswordText,
+                {color: theme.primary},
+              ]}>
               Forgot Password?
             </Text>
           </TouchableOpacity>
@@ -242,19 +272,47 @@ const LoginScreen = ({ navigation }) => {
               isLoggingIn && styles.disabledButton,
             ]}
             disabled={isLoggingIn}
-            onPress={handleLogin}
-          >
+            onPress={handleLogin}>
             <Text style={styles.buttonText}>
-              {isLoggingIn ? 'Logging in...' : t.login || 'Login'}
+              {isLoggingIn
+                ? 'Logging in...'
+                : t.login || 'Login'}
             </Text>
           </TouchableOpacity>
 
           {/* ================= OR DIVIDER ================= */}
 
           <View style={styles.dividerContainer}>
-            <View style={[styles.dividerLine, { backgroundColor: theme.border || '#ccc' }]} />
-            <Text style={[styles.dividerText, { color: theme.placeholder || '#777' }]}>OR</Text>
-            <View style={[styles.dividerLine, { backgroundColor: theme.border || '#ccc' }]} />
+            <View
+              style={[
+                styles.dividerLine,
+                {
+                  backgroundColor:
+                    theme.border || '#ccc',
+                },
+              ]}
+            />
+
+            <Text
+              style={[
+                styles.dividerText,
+                {
+                  color:
+                    theme.placeholder || '#777',
+                },
+              ]}>
+              OR
+            </Text>
+
+            <View
+              style={[
+                styles.dividerLine,
+                {
+                  backgroundColor:
+                    theme.border || '#ccc',
+                },
+              ]}
+            />
           </View>
 
           {/* ================= GOOGLE SIGN-IN BUTTON ================= */}
@@ -265,24 +323,27 @@ const LoginScreen = ({ navigation }) => {
               isLoggingIn && styles.disabledButton,
             ]}
             disabled={isLoggingIn}
-            onPress={handleGoogleSignIn}
-          >
+            onPress={handleGoogleSignIn}>
             <Text style={styles.googleIcon}>G</Text>
-            <Text style={styles.googleButtonText}>Sign in with Google</Text>
+
+            <Text style={styles.googleButtonText}>
+              Sign in with Google
+            </Text>
           </TouchableOpacity>
 
           {/* ================= REGISTER ================= */}
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Register')}
-          >
+            onPress={() =>
+              navigation.navigate('Register')
+            }>
             <Text
               style={[
                 styles.registerText,
-                { color: theme.primary },
-              ]}
-            >
-              {t.noAccountRegister || "Don't have an account? Register"}
+                {color: theme.primary},
+              ]}>
+              {t.noAccountRegister ||
+                "Don't have an account? Register"}
             </Text>
           </TouchableOpacity>
 
@@ -293,7 +354,6 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-
   keyboardContainer: {
     flex: 1,
   },
