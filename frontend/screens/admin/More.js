@@ -14,13 +14,21 @@ const More = ({ navigation }) => {
         <Text style={[styles.itemText, { color: theme.text }]}>Manage Offices</Text>
       </TouchableOpacity>
 
-      {/* 👇 नवीन */}
       <TouchableOpacity
         style={[styles.item, { backgroundColor: theme.inputBackground, borderColor: theme.border }]}
         onPress={() => navigation.navigate('DeliveryPartnersList')}
       >
         <Text style={{ fontSize: 20, marginRight: 12 }}>🏍️</Text>
         <Text style={[styles.itemText, { color: theme.text }]}>Delivery Partners</Text>
+      </TouchableOpacity>
+
+      {/* 👇 नवीन: Help */}
+      <TouchableOpacity
+        style={[styles.item, { backgroundColor: theme.inputBackground, borderColor: theme.border }]}
+        onPress={() => navigation.navigate('AdminHelp')}
+      >
+        <Text style={{ fontSize: 20, marginRight: 12 }}>❓</Text>
+        <Text style={[styles.itemText, { color: theme.text }]}>Help</Text>
       </TouchableOpacity>
     </View>
   );
@@ -34,7 +42,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12, // 👈 नवीन: दोन बटणांमध्ये अंतर
+    marginBottom: 12,
   },
   itemText: { fontSize: 15, fontWeight: '600' },
 });

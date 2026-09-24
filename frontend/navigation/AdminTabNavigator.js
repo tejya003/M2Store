@@ -12,7 +12,8 @@ import OrdersList from '../screens/admin/OrdersList';
 import Invoice from '../screens/admin/Invoice';
 import More from '../screens/admin/More';
 import ManageOffices from '../screens/admin/ManageOffices';
-import DeliveryPartnersList from '../screens/admin/DeliveryPartnersList'; // 👈 नवीन
+import DeliveryPartnersList from '../screens/admin/DeliveryPartnersList';
+import AdminHelp from '../screens/admin/AdminHelp'; // 👈 नवीन
 
 const Tab = createBottomTabNavigator();
 const ProductsStack = createNativeStackNavigator();
@@ -49,6 +50,12 @@ const MoreStackScreen = () => (
       name="DeliveryPartnersList"
       component={DeliveryPartnersList}
       options={{ headerShown: true, title: 'Delivery Partners' }}
+    />
+    {/* 👇 नवीन */}
+    <MoreStack.Screen
+      name="AdminHelp"
+      component={AdminHelp}
+      options={{ headerShown: true, title: 'Help' }}
     />
   </MoreStack.Navigator>
 );

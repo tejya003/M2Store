@@ -10,6 +10,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const userManagementRoutes = require('./routes/userManagementRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 app.use(express.json());
@@ -39,6 +40,9 @@ app.use('/api', require('./routes/invoice'));
 app.use('/api/orders', require('./routes/scanRoutes'));
 app.use('/api/admin/offices', require('./routes/officeRoutes'));
 app.use('/api/delivery', require('./routes/deliveryRoutes'));
+
+// Customer Help Chat Routes
+app.use('/api/chat', chatRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -107,12 +107,23 @@ const Profile = ({ navigation }) => {
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem}>
           <Text style={styles.menuIcon}>⚙️</Text>
           <Text style={styles.menuText}>Settings</Text>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
+
+        {/* 👇 नवीन: Help */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Help')}
+        >
+          <Text style={styles.menuIcon}>❓</Text>
+          <Text style={styles.menuText}>Help</Text>
+          <Text style={styles.arrow}>›</Text>
+        </TouchableOpacity>
       </View>
+      
 
       {/* Logout Button */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
